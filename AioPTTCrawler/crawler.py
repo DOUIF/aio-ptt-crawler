@@ -1,17 +1,12 @@
-import re
-import sys
-from pathlib import Path
-
-sys.path.append(f"{Path(__file__).parents[1]}")
-
 import asyncio
+import re
 from datetime import datetime, timedelta
 
 import aiohttp
 from lxml import etree
-from wind_box.ptt_crawler.model import Article, Comment
-from wind_box.ptt_crawler.ptt_data import PTTData
 
+from .model import Article, Comment
+from .ptt_data import PTTData
 
 class Crawler:
     PTT_URL: str = "https://www.ptt.cc"

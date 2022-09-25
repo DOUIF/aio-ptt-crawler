@@ -1,10 +1,5 @@
-import sys
-from pathlib import Path
-
-sys.path.append(f"{Path(__file__).parents[1]}")
-
 import pandas as pd
-from wind_box.ptt_crawler.model import Article, Comment
+from .model import Article, Comment
 
 
 class PTTData:

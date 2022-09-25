@@ -1,18 +1,12 @@
-import sys
-from pathlib import Path
-
-package_path = f"{Path(__file__).parents[2]}"
-sys.path.append(package_path)
-
 import asyncio
 import re
 
 import requests
-from wind_box.ptt_crawler.crawler import Crawler
-from wind_box.ptt_crawler.ptt_data import PTTData
+from .crawler import Crawler
+from .ptt_data import PTTData
 
 
-class PTTCrawler:
+class AioPTTCrawler:
     # class variable
     PTT_URL: str = "https://www.ptt.cc"
     COOKIES: dict[str:str] = {"over18": "1"}
@@ -59,8 +53,8 @@ class PTTCrawler:
     def get_latest_index(self, board: str) -> int:
         # board's index.html always point to the newest page.
         content = requests.get(
-            url=f"{PTTCrawler.PTT_URL}/bbs/{board}/index.html",
-            cookies=PTTCrawler.COOKIES,
+            url=f"{AioPTTCrawler.PTT_URL}/bbs/{board}/index.html",
+            cookies=AioPTTCrawler.COOKIES,
         ).content.decode("utf-8")
 
         # search for the previous page number.
@@ -76,7 +70,7 @@ class PTTCrawler:
 
 def main():
     BOARD = "Gossiping"
-    ptt_crawler = PTTCrawler()
+    ptt_crawler = AioPTTCrawler()
     ptt_data = ptt_crawler.get_board_articles(board=BOARD, page_count=1)
     d = ptt_data.get_article_dict()
     print(d)
