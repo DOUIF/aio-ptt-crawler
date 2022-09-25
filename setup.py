@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
-with open("README.md", "r") as file:
+with open("README.md", "r", encoding="UTF-8") as file:
     long_description = file.read()
 
 name = "AioPTTCrawler"
 setup(
     name=name,
-    version="0.0.2",
+    version="0.0.3",
     author="DOUIF",
     author_email="a15975345678@gmail.com",
     description="PTT crawler using asyncio",
