@@ -185,6 +185,8 @@ class Crawler:
         re_pattern_dict = {
             "ip_address": "([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*)",
         }
+        comment_ip_pattern = r"^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+        comment_datetime_pattern = r"(\d{,2}/\d{,2} \d{,2}:\d{,2})$"
         # loop content and extract useful information
         for article_id, content in zip(article_ids, article_content):
             lxml_tree = etree.HTML(content).xpath(main_content_xpath)[0]
@@ -228,8 +230,14 @@ class Crawler:
                 _push_user_id = push_user_id.text
                 _push_content = push_content.text
                 _push_ip_date_time = re.sub("[\n]", "", push_ip_date_time.text)
+                _push_ip = re.search(comment_ip_pattern, +_push_ip_date_time).group(1)
+                try:
+                    _push_date_time = datetime.strptime(post_time.year + re.search(comment_datetime_pattern, push_ip_date_time).group(1), "%Y/%m/%d %H:%M")
+                except:
+                    _push_date_time = None
+
                 # append into ptt_data
-                comment = Comment(article_id, _push_tag, _push_user_id, idx, _push_content, _push_ip_date_time, _push_ip_date_time)
+                comment = Comment(article_id, _push_tag, _push_user_id, idx, _push_content, _push_date_time, _push_ip)
                 ptt_data.append(comment)
                 comment_list.append(comment)
 
