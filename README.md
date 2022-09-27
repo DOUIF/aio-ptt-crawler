@@ -4,6 +4,10 @@ This is Python Package use to crawl PTT's article data by using asyncio.
 
 ## Documentation
 
+### [PyPi Page][]
+
+[PyPi Page]:<https://pypi.org/project/AioPTTCrawler/>
+
 ```bash
 pip install AioPTTCrawler
 ```
