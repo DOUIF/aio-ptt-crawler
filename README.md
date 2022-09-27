@@ -76,6 +76,14 @@ comment's dict format
 
 [article]: https://www.ptt.cc/bbs/Gossiping/M.1663144920.A.A6E.html
 
+## Comparsion
+
+### Used time difference between normal method and async method
+
+![time diff](/time-diff.png)
+
+#### (unit: second)
+
 ## Support
 
 You may report bugs, ask for help and discuss various other issues on the [issuse][]
