@@ -1,4 +1,4 @@
-# AioPTTCrawler
+# AioPTTCrawler (PTT 網路版爬蟲)
 
 This is Python Package use to crawl PTT's article data by using asyncio.
 
