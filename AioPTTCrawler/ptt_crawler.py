@@ -16,7 +16,7 @@ class AioPTTCrawler:
         pass
 
     # get newest pages from ptt board
-    def get_board_articles(self, board: str, page_count: int = 10) -> PTTData:
+    def get_board_latest_articles(self, board: str, page_count: int = 10) -> PTTData:
         """
         Getting PTT board's articles with amount of pages.
 
@@ -32,6 +32,22 @@ class AioPTTCrawler:
         # calculate start page number
         start_index = end_index - page_count + 1
 
+        # return PTTData
+        return self.get_board_articles(board, start_index, end_index)
+
+    # get articles by range of index
+    def get_board_articles(self, board: str, start_index:int ,end_index:int) -> PTTData:
+        """
+        Getting PTT board's articles with amount of pages.
+
+        Parameters:
+        board (str): PTT board's name
+        start_index (int): start index.
+        end_index (int): end index.
+
+        Returns:
+        PTTData: custom class to store data from PTT
+        """
         # create async event loop
         self.event_loop = asyncio.get_event_loop()
         # list all crawler
@@ -46,7 +62,8 @@ class AioPTTCrawler:
 
         ptt_data = PTTData()
         for sub_ptt_data in results:
-            ptt_data.update(sub_ptt_data)
+            if sub_ptt_data:
+                ptt_data.update(sub_ptt_data)
         return ptt_data
 
     # get latest page index from ptt board
@@ -71,7 +88,7 @@ class AioPTTCrawler:
 def main():
     BOARD = "Gossiping"
     ptt_crawler = AioPTTCrawler()
-    ptt_data = ptt_crawler.get_board_articles(board=BOARD, page_count=1)
+    ptt_data = ptt_crawler.get_board_latest_articles(board=BOARD, page_count=1)
     d = ptt_data.get_article_dict()
     print(d)
 

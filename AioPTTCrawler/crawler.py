@@ -8,6 +8,7 @@ from lxml import etree
 from .model import Article, Comment
 from .ptt_data import PTTData
 
+
 class Crawler:
     PTT_URL: str = "https://www.ptt.cc"
     COOKIES: dict[str:str] = {"over18": "1"}
@@ -30,7 +31,13 @@ class Crawler:
         PTTData: preprocessed data from website response
         """
         print(f"Start crawling {self.board}: {self.page_number}")
-        result = await self.get_url_data(f"{Crawler.PTT_URL}/bbs/{self.board}/index{self.page_number}.html")
+        url = f"{Crawler.PTT_URL}/bbs/{self.board}/index{self.page_number}.html"
+        try:
+            result = await self.get_url_data(url)
+        except Exception as e:
+            print(e)
+            print(f"{self.board}: getting {url} error.")
+            return None
         processed_result = await self.processing_data(result)
         print(f"Finish crawling {self.board}: {self.page_number}")
         return processed_result
@@ -185,8 +192,8 @@ class Crawler:
         re_pattern_dict = {
             "ip_address": "([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*)",
         }
-        comment_ip_pattern = r"^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
-        comment_datetime_pattern = r"(\d{,2}/\d{,2} \d{,2}:\d{,2})$"
+        comment_ip_pattern = r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+        comment_datetime_pattern = r"(\d{,2}/\d{,2} \d{,2}:\d{,2})"
         # loop content and extract useful information
         for article_id, content in zip(article_ids, article_content):
             lxml_tree = etree.HTML(content).xpath(main_content_xpath)[0]
@@ -230,9 +237,12 @@ class Crawler:
                 _push_user_id = push_user_id.text
                 _push_content = push_content.text
                 _push_ip_date_time = re.sub("[\n]", "", push_ip_date_time.text)
-                _push_ip = re.search(comment_ip_pattern, +_push_ip_date_time).group(1)
+                _push_ip = re.search(comment_ip_pattern, _push_ip_date_time)
+                _push_ip = _push_ip.group(1) if _push_ip else ""
                 try:
-                    _push_date_time = datetime.strptime(post_time.year + re.search(comment_datetime_pattern, push_ip_date_time).group(1), "%Y/%m/%d %H:%M")
+                    _push_date_time = datetime.strptime(
+                        str(post_time.year) + "/" + re.search(comment_datetime_pattern, _push_ip_date_time).group(1), "%Y/%m/%d %H:%M"
+                    )
                 except:
                     _push_date_time = None
 
