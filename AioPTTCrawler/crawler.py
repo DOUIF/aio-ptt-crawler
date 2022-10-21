@@ -188,9 +188,6 @@ class Crawler:
             "push_content": "//div[@class='push']/span[3]",
             "push_ip_date_time": "//div[@class='push']/span[4]",
         }
-        re_pattern_dict = {
-            "ip_address": "([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*)",
-        }
         comment_ip_pattern = r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
         comment_datetime_pattern = r"(\d{,2}/\d{,2} \d{,2}:\d{,2})"
         # loop content and extract useful information
@@ -261,7 +258,8 @@ class Crawler:
             # remove all \n, \t
             context = "".join(map(lambda x: re.sub(r"[\s\t]", "", x), context_list))
             # get ip
-            ip_address = re.search(re_pattern_dict["ip_address"], content).group(1)
+            ip_address = re.search(comment_ip_pattern, content)
+            ip_address = ip_address.group(1) if ip_address else ""
 
             # append into ptt_data
             article = Article(article_id, title, user_id, user_name, self.board, post_time, context, ip_address, comment_list)
