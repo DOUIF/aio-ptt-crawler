@@ -178,7 +178,6 @@ class Crawler:
 
         article_xpath_dict = {
             "author": '//*[@id="main-content"]/div[1]',
-            "board": '//*[@id="main-content"]/div[2]',
             "title": '//*[@id="main-content"]/div[3]',
             "post_time": '//*[@id="main-content"]/div[4]',
         }
@@ -209,8 +208,6 @@ class Crawler:
             # get author
             full_name = article_data["author"][:-1].split(" (")
             user_id, user_name = full_name[0], full_name[0] if len(full_name) != 2 else full_name[1]
-            # get board
-            board = article_data["board"]
             # get title
             title = article_data["title"]
             # get post date
@@ -267,7 +264,7 @@ class Crawler:
             ip_address = re.search(re_pattern_dict["ip_address"], content).group(1)
 
             # append into ptt_data
-            article = Article(article_id, title, user_id, user_name, board, post_time, context, ip_address, comment_list)
+            article = Article(article_id, title, user_id, user_name, self.board, post_time, context, ip_address, comment_list)
             ptt_data.append(article)
         return ptt_data
 
