@@ -230,7 +230,7 @@ class Crawler:
                 for idx, push_tag, push_user_id, push_content, push_ip_date_time in zip(*comment_data):
                     _push_tag = push_tag.text.replace(" ", "")
                     _push_user_id = push_user_id.text
-                    _push_content = push_content.text
+                    _push_content = push_content.text[2:] if len(push_content.text) > 2 else ""
                     _push_ip_date_time = re.sub("[\n]", "", push_ip_date_time.text)
                     _push_ip = re.search(comment_ip_pattern, _push_ip_date_time)
                     _push_ip = _push_ip.group(1) if _push_ip else None
