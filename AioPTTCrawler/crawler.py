@@ -233,7 +233,7 @@ class Crawler:
                     _push_content = push_content.text
                     _push_ip_date_time = re.sub("[\n]", "", push_ip_date_time.text)
                     _push_ip = re.search(comment_ip_pattern, _push_ip_date_time)
-                    _push_ip = _push_ip.group(1) if _push_ip else ""
+                    _push_ip = _push_ip.group(1) if _push_ip else None
                     try:
                         _push_date_time = datetime.strptime(
                             str(post_time.year) + "/" + re.search(comment_datetime_pattern, _push_ip_date_time).group(1), "%Y/%m/%d %H:%M"
@@ -242,7 +242,7 @@ class Crawler:
                         _push_date_time = None
 
                     # append into ptt_data
-                    comment = Comment(article_id, _push_tag, _push_user_id, idx, _push_content, _push_date_time, _push_ip)
+                    comment = Comment(article_id, _push_tag, _push_user_id, idx + 1, _push_content, _push_date_time, _push_ip)
                     ptt_data.append(comment)
                     comment_list.append(comment)
 
