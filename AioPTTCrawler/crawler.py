@@ -192,78 +192,82 @@ class Crawler:
         comment_datetime_pattern = r"(\d{,2}/\d{,2} \d{,2}:\d{,2})"
         # loop content and extract useful information
         for article_id, content in zip(article_ids, article_content):
-            lxml_tree = etree.HTML(content).xpath(main_content_xpath)[0]
-
-            article_data = dict()
-            # skip data if it is incomplete.
             try:
-                for key, value in article_xpath_dict.items():
-                    article_data[key] = lxml_tree.xpath(value)[0].xpath("span")[1].text
-            except IndexError as IE:
-                continue
+                lxml_tree = etree.HTML(content).xpath(main_content_xpath)[0]
 
-            # get author
-            full_name = article_data["author"][:-1].split(" (")
-            user_id, user_name = full_name[0], full_name[0] if len(full_name) != 2 else full_name[1]
-            # get title
-            title = article_data["title"]
-            # get post date
-            try:
-                post_time = datetime.strptime(article_data["post_time"].replace(" ", "|").replace("||", "|0"), "%a|%b|%d|%H:%M:%S|%Y")
-            except ValueError as VE:
-                previous_time = ptt_data.get_last_article()
+                article_data = dict()
                 # skip data if it is incomplete.
-                if previous_time is None:
-                    continue
-                post_time = previous_time.post_time + timedelta(seconds=1)
-
-            # get comment
-            comment_list = []
-            comment_data = [
-                range(len(lxml_tree.xpath(comment_xpath_dict["comment"]))),
-                lxml_tree.xpath(comment_xpath_dict["push_tag"]),
-                lxml_tree.xpath(comment_xpath_dict["push_user_id"]),
-                lxml_tree.xpath(comment_xpath_dict["push_content"]),
-                lxml_tree.xpath(comment_xpath_dict["push_ip_date_time"]),
-            ]
-            for idx, push_tag, push_user_id, push_content, push_ip_date_time in zip(*comment_data):
-                _push_tag = push_tag.text
-                _push_user_id = push_user_id.text
-                _push_content = push_content.text
-                _push_ip_date_time = re.sub("[\n]", "", push_ip_date_time.text)
-                _push_ip = re.search(comment_ip_pattern, _push_ip_date_time)
-                _push_ip = _push_ip.group(1) if _push_ip else ""
                 try:
-                    _push_date_time = datetime.strptime(
-                        str(post_time.year) + "/" + re.search(comment_datetime_pattern, _push_ip_date_time).group(1), "%Y/%m/%d %H:%M"
-                    )
-                except:
-                    _push_date_time = None
+                    for key, value in article_xpath_dict.items():
+                        article_data[key] = lxml_tree.xpath(value)[0].xpath("span")[1].text
+                except IndexError as IE:
+                    continue
+
+                # get author
+                full_name = article_data["author"][:-1].split(" (")
+                user_id, user_name = full_name[0], full_name[0] if len(full_name) != 2 else full_name[1]
+                # get title
+                title = article_data["title"]
+                # get post date
+                try:
+                    post_time = datetime.strptime(article_data["post_time"].replace(" ", "|").replace("||", "|0"), "%a|%b|%d|%H:%M:%S|%Y")
+                except ValueError as VE:
+                    previous_time = ptt_data.get_last_article()
+                    # skip data if it is incomplete.
+                    if previous_time is None:
+                        continue
+                    post_time = previous_time.post_time + timedelta(seconds=1)
+
+                # get comment
+                comment_list = []
+                comment_data = [
+                    range(len(lxml_tree.xpath(comment_xpath_dict["comment"]))),
+                    lxml_tree.xpath(comment_xpath_dict["push_tag"]),
+                    lxml_tree.xpath(comment_xpath_dict["push_user_id"]),
+                    lxml_tree.xpath(comment_xpath_dict["push_content"]),
+                    lxml_tree.xpath(comment_xpath_dict["push_ip_date_time"]),
+                ]
+                for idx, push_tag, push_user_id, push_content, push_ip_date_time in zip(*comment_data):
+                    _push_tag = push_tag.text
+                    _push_user_id = push_user_id.text
+                    _push_content = push_content.text
+                    _push_ip_date_time = re.sub("[\n]", "", push_ip_date_time.text)
+                    _push_ip = re.search(comment_ip_pattern, _push_ip_date_time)
+                    _push_ip = _push_ip.group(1) if _push_ip else ""
+                    try:
+                        _push_date_time = datetime.strptime(
+                            str(post_time.year) + "/" + re.search(comment_datetime_pattern, _push_ip_date_time).group(1), "%Y/%m/%d %H:%M"
+                        )
+                    except:
+                        _push_date_time = None
+
+                    # append into ptt_data
+                    comment = Comment(article_id, _push_tag, _push_user_id, idx, _push_content, _push_date_time, _push_ip)
+                    ptt_data.append(comment)
+                    comment_list.append(comment)
+
+                # get context
+                # remove all comments, leave only article context
+                delete_flag = False
+                for i in lxml_tree.xpath("./*"):
+                    if i.get("class") == "f2":
+                        delete_flag = True
+                    if delete_flag:
+                        i.getparent().remove(i)
+                context_xpath = "//div[@class='article-metaline'][3]/following-sibling::text()"
+                context_list = lxml_tree.xpath(context_xpath)
+                # remove all \n, \t
+                context = "".join(map(lambda x: re.sub(r"[\s\t]", "", x), context_list))
+                # get ip
+                ip_address = re.search(comment_ip_pattern, content)
+                ip_address = ip_address.group(1) if ip_address else ""
 
                 # append into ptt_data
-                comment = Comment(article_id, _push_tag, _push_user_id, idx, _push_content, _push_date_time, _push_ip)
-                ptt_data.append(comment)
-                comment_list.append(comment)
+                article = Article(article_id, title, user_id, user_name, self.board, post_time, context, ip_address, comment_list)
+                ptt_data.append(article)
+            except Exception as e:
+                print("Getting article error: ", e)
 
-            # get context
-            # remove all comments, leave only article context
-            delete_flag = False
-            for i in lxml_tree.xpath("./*"):
-                if i.get("class") == "f2":
-                    delete_flag = True
-                if delete_flag:
-                    i.getparent().remove(i)
-            context_xpath = "//div[@class='article-metaline'][3]/following-sibling::text()"
-            context_list = lxml_tree.xpath(context_xpath)
-            # remove all \n, \t
-            context = "".join(map(lambda x: re.sub(r"[\s\t]", "", x), context_list))
-            # get ip
-            ip_address = re.search(comment_ip_pattern, content)
-            ip_address = ip_address.group(1) if ip_address else ""
-
-            # append into ptt_data
-            article = Article(article_id, title, user_id, user_name, self.board, post_time, context, ip_address, comment_list)
-            ptt_data.append(article)
         return ptt_data
 
 
