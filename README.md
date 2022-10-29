@@ -35,6 +35,17 @@ BOARD = "Gossiping"
 ptt_data = ptt_crawler.get_board_articles(board=BOARD, start_index=100, end_index=200)
 ```
 
+```python
+ptt_crawler = AioPTTCrawler()
+
+BOARD = "Gossiping"
+ptt_data = ptt_crawler.get_article_by_datetime(
+    BOARD,
+    datetime(year=2022, month=10, day=1),
+    datetime(year=2022, month=10, day=2),
+)
+```
+
 #### ptt_data is a PTTData object. To extract data you need to use get_article_dict(), get_article_dataframe(), get_article_list() etc
 
 ---
