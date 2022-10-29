@@ -1,7 +1,9 @@
 import asyncio
 import re
+from datetime import datetime
 
 import requests
+
 from .crawler import Crawler
 from .ptt_data import PTTData
 
@@ -36,7 +38,7 @@ class AioPTTCrawler:
         return self.get_board_articles(board, start_index, end_index)
 
     # get articles by range of index
-    def get_board_articles(self, board: str, start_index:int ,end_index:int) -> PTTData:
+    def get_board_articles(self, board: str, start_index: int, end_index: int) -> PTTData:
         """
         Getting PTT board's articles with amount of pages.
 
@@ -84,11 +86,15 @@ class AioPTTCrawler:
         # return latest page number
         return int(previous_page.group(1)) + 1
 
+    # get article by datetime range
+    def get_article_by_datetime(self, board: str, start_time: datetime, end_time: datetime) -> PTTData:
+        pass
+
 
 def main():
     BOARD = "Gossiping"
     ptt_crawler = AioPTTCrawler()
-    ptt_data = ptt_crawler.get_board_latest_articles(board=BOARD, page_count=1)
+    ptt_data = ptt_crawler.get_board_latest_articles(board=BOARD, page_count=100)
     d = ptt_data.get_article_dict()
     print(d)
 

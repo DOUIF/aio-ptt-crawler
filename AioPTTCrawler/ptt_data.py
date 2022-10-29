@@ -1,4 +1,7 @@
+from datetime import datetime
+
 import pandas as pd
+
 from .model import Article, Comment
 
 
@@ -95,6 +98,15 @@ class PTTData:
         if len(self.__comment_list) == 0:
             return None
         return self.__comment_list[-1]
+
+    # return all article date
+    def get_date_from_article(self) -> list[datetime]:
+        date_list = list()
+        for article in self.__article_list:
+            date = article.post_time.replace(hour=0, minute=0, second=0, microsecond=0)
+            if date not in date_list:
+                date_list.append(date)
+        return date_list
 
 
 def main():
