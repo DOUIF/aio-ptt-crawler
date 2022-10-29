@@ -52,6 +52,11 @@ class AioPTTCrawler:
         """
         # create async event loop
         self.event_loop = asyncio.get_event_loop()
+
+        # ensure index won't out of boundary
+        start_index = max(1, start_index)
+        end_index = min(self.get_latest_index(board), end_index)
+
         # list all crawler
         crawlers = [Crawler(board, i) for i in range(start_index, end_index + 1)]
         # list all tasks
