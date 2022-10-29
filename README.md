@@ -25,7 +25,14 @@ ptt_crawler = AioPTTCrawler()
 ptt_crawler = AioPTTCrawler()
 
 BOARD = "Gossiping"
-ptt_data = ptt_crawler.get_board_articles(board=BOARD, page_count=10)
+ptt_data = ptt_crawler.get_board_latest_articles(board=BOARD, page_count=10)
+```
+
+```python
+ptt_crawler = AioPTTCrawler()
+
+BOARD = "Gossiping"
+ptt_data = ptt_crawler.get_board_articles(board=BOARD, start_index=100, end_index=200)
 ```
 
 #### ptt_data is a PTTData object. To extract data you need to use get_article_dict(), get_article_dataframe(), etc
