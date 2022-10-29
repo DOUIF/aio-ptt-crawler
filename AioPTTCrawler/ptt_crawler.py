@@ -1,6 +1,6 @@
 import asyncio
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 
@@ -38,7 +38,7 @@ class AioPTTCrawler:
         return self.get_board_articles(board, start_index, end_index)
 
     # get articles by range of index
-    def get_board_articles(self, board: str, start_index: int, end_index: int) -> PTTData:
+    def get_board_articles(self, board: str, start_index: int, end_index: int, show_progress=True) -> PTTData:
         """
         Getting PTT board's articles with amount of pages.
 
@@ -50,6 +50,7 @@ class AioPTTCrawler:
         Returns:
         PTTData: custom class to store data from PTT
         """
+
         # create async event loop
         self.event_loop = asyncio.get_event_loop()
 
@@ -57,10 +58,16 @@ class AioPTTCrawler:
         start_index = max(1, start_index)
         end_index = min(self.get_latest_index(board), end_index)
 
+        if show_progress:
+            print(f"Start to crawl page {start_index} ~ {end_index}")
+
+        sem = asyncio.Semaphore(50)
+
         # list all crawler
         crawlers = [Crawler(board, i) for i in range(start_index, end_index + 1)]
         # list all tasks
-        tasks = [crawler.get_specific_page_data() for crawler in crawlers]
+        tasks = [crawler.get_specific_page_data(sem, show_progress) for crawler in crawlers]
+
         # run tasks and get the results
         results: list[PTTData] = self.event_loop.run_until_complete(asyncio.gather(*tasks))
 
@@ -93,7 +100,36 @@ class AioPTTCrawler:
 
     # get article by datetime range
     def get_article_by_datetime(self, board: str, start_time: datetime, end_time: datetime) -> PTTData:
-        pass
+        start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_time = end_time.replace(hour=23, minute=59, second=59, microsecond=0)
+
+        print("Start to find target date range")
+        start_index = self._search_page_date(board, start_time - timedelta(days=1))
+        end_index = self._search_page_date(board, end_time + timedelta(days=1))
+        print(f"Found target date range. roughly location in {start_index} ~ {end_index}")
+
+        ptt_data = self.get_board_articles(board, start_index, end_index, show_progress=False)
+
+        print("Filter and sort article by date")
+        ptt_data.delete_data_by_date(start_time, end_time)
+
+        return ptt_data
+
+    def _search_page_date(self, board: str, date: datetime) -> int:
+        start_index = 1
+        last_index = self.get_latest_index(board)
+        while start_index <= last_index:
+            mid = (start_index + last_index) // 2
+            ptt_data = self.get_board_articles(board, mid, mid, show_progress=False)
+            date_list = ptt_data.get_date_from_article()
+            # print(start_time, end_time, mid, date_list)
+            if date > date_list[0]:
+                start_index = mid + 1
+            elif date < date_list[0]:
+                last_index = mid - 1
+            else:
+                break
+        return mid
 
 
 def main():

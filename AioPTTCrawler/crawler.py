@@ -20,7 +20,7 @@ class Crawler:
         self.page_number = page_number
 
     # get ptt board articles with specific page
-    async def get_specific_page_data(self) -> PTTData:
+    async def get_specific_page_data(self, sem, show_progress=False) -> PTTData:
         """
         Getting PTT board's articles with specific page.
 
@@ -30,17 +30,20 @@ class Crawler:
         Returns:
         PTTData: preprocessed data from website response
         """
-        print(f"Start crawling {self.board}: {self.page_number}")
-        url = f"{Crawler.PTT_URL}/bbs/{self.board}/index{self.page_number}.html"
-        try:
-            result = await self.get_url_data(url)
-        except Exception as e:
-            print(e)
-            print(f"{self.board}: getting {url} error.")
-            return None
-        processed_result = await self.processing_data(result)
-        print(f"Finish crawling {self.board}: {self.page_number}")
-        return processed_result
+        async with sem:
+            if show_progress:
+                print(f"Start crawling {self.board}: {self.page_number}")
+            url = f"{Crawler.PTT_URL}/bbs/{self.board}/index{self.page_number}.html"
+            try:
+                result = await self.get_url_data(url)
+            except Exception as e:
+                print(e)
+                print(f"{self.board}: getting {url} error.")
+                return None
+            processed_result = await self.processing_data(result)
+            if show_progress:
+                print(f"Finish crawling {self.board}: {self.page_number}")
+            return processed_result
 
     # get original data from url
     async def get_url_data(self, url: str) -> str:

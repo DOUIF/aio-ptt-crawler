@@ -108,6 +108,21 @@ class PTTData:
                 date_list.append(date)
         return date_list
 
+    def delete_data_by_date(self, start_time: datetime, end_time: datetime) -> None:
+        pos = 0
+        while pos < len(self.__article_list):
+            time = self.__article_list[pos].post_time
+            if time < start_time or time > end_time:
+                del self.__article_list[pos]
+            else:
+                pos += 1
+        self.__article_list.sort(key=lambda x: x.post_time)
+
+        del self.__comment_list
+        self.__comment_list = list()
+        for article in self.__article_list:
+            self.__comment_list.extend(article.comment_list)
+
 
 def main():
     ptt = PTTData()
