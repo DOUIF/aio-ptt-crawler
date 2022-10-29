@@ -35,7 +35,7 @@ BOARD = "Gossiping"
 ptt_data = ptt_crawler.get_board_articles(board=BOARD, start_index=100, end_index=200)
 ```
 
-#### ptt_data is a PTTData object. To extract data you need to use get_article_dict(), get_article_dataframe(), etc
+#### ptt_data is a PTTData object. To extract data you need to use get_article_dict(), get_article_dataframe(), get_article_list() etc
 
 ---
 
@@ -87,7 +87,7 @@ comment's dict format
 
 [article]: https://www.ptt.cc/bbs/Gossiping/M.1663144920.A.A6E.html
 
-## Comparsion
+## Comparison
 
 ### Used time difference between normal method and async method
 
